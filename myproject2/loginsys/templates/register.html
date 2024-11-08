@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <!-- Подключение Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h2>Register</h2>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <!-- Поле для ввода имени пользователя -->
+                            <div class="form-group">
+                                {{ form.username.label_tag }}
+                                {{ form.username }}
+                                {{ form.username.errors }}
+                            </div>
+
+                            <!-- Поле для ввода пароля -->
+                            <div class="form-group">
+                                {{ form.password1.label_tag }}
+                                {{ form.password1 }}
+                                {{ form.password1.errors }}
+                            </div>
+
+                            <!-- Поле для подтверждения пароля -->
+                            <div class="form-group">
+                                {{ form.password2.label_tag }}
+                                {{ form.password2 }}
+                                {{ form.password2.errors }}
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">Register</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

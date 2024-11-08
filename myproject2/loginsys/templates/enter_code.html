@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enter Secret Code</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Enter Secret Code</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Verify Code</button>
+        </form>
+    </div>
+</body>
+</html>
