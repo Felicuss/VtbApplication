@@ -69,3 +69,9 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
+
+
+def logout(request):
+    url_from = request.META['register']
+    logout(request)
+    return redirect(url_from)
