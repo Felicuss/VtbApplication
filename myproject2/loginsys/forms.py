@@ -1,17 +1,26 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from django.contrib.auth.models import User
 
 
-class CustomUserCreationForm(UserCreationForm):
+class UserRegistrationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))
+    password_confirm = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}))
+
     class Meta:
-        model = CustomUser
-        fields = ('username', 'password1', 'password2', 'secret_code')
+        model = User
+        fields = ['username', 'password', 'password_confirm']
+        widgets = {
+            'username': forms.TextInput(attrs={'placeholder': 'Username'}),
+        }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'form-control'
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        password_confirm = cleaned_data.get("password_confirm")
+
+        if password and password_confirm and password != password_confirm:
+            raise forms.ValidationError("Passwords do not match.")
+        return cleaned_data
 
 
 class SecretCodeForm(forms.Form):

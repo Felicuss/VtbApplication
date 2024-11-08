@@ -1,20 +1,10 @@
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import User
 from django.db import models
 
 
-class CustomUser(AbstractUser):
-    secret_code = models.CharField(blank=True, null=True, default='')
+class UserSecretCode(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    secret_code = models.CharField(blank=True, null=True)
 
-    # Настраиваем уникальные `related_name` для полей `groups` и `user_permissions`
-    groups = models.ManyToManyField(
-        Group,
-        related_name='customuser_groups',  # Уникальное имя обратной ссылки для группы
-        blank=True,
-        verbose_name='groups'
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name='customuser_permissions',  # Уникальное имя обратной ссылки для разрешений
-        blank=True,
-        verbose_name='user permissions'
-    )
+    def __str__(self):
+        return f"{self.user.username} - Secret Code"
