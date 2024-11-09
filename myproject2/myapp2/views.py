@@ -6,8 +6,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from .models import Contact
 from .serializers import ContactSerializer
-from rest_framework.decorators import api_view, renderer_classes
-from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from django.http import JsonResponse, HttpResponse
 import json
 
 
@@ -65,13 +64,23 @@ class ContactListCreate(generics.ListCreateAPIView):
         return Response(serializer.data)
 
 
-@api_view(('GET',))
-@renderer_classes((JSONRenderer))
-def yandex_handler(event):
-    response_data = {}
-    event = event.POST
-    text = "Привет, я навык с помощью, которого ты сможешь авторизоваться в тестовом приложении для ВТБ хаккатона от команды Misis Mojarung"
-    response_data['response']: {"text": text, "end_session": "false"}
-    return JsonResponse({
-        response_data
-    })
+from django.http import JsonResponse
+import json
+
+def yandex_handler(request):
+    if request.method == 'POST':
+        event = json.loads(request.body)
+        user_text = event['request']['nlu']['tokens']
+        user_text = ' '.join(user_text)
+        response_text = 'pupupuupu'
+        response = {
+            "response": {
+                "text": response_text,
+                "end_session": False
+            },
+            "version": "1.0"
+        }
+
+        return JsonResponse(response, safe=False)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=400)
