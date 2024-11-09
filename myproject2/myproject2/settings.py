@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-3czs%!nnemo7y%yf7#4shk+x+54^b)lg^@0_(k$1nc$vl^%ol1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2', '26f6-79-104-4-212.ngrok-free.app']
 
 
 # Application definition
@@ -105,6 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGOUT_REDIRECT_URL = '/login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -116,7 +117,6 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

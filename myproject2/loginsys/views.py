@@ -7,6 +7,25 @@ from .models import UserSecretCode
 from django.contrib.auth import login
 from django.contrib.auth.forms import AuthenticationForm
 
+import secrets
+from cryptography.fernet import Fernet
+
+secret_key = 'gnehx6C8O2o2JquonBEzPVrDGfdnRns8K34zzkqiPi8='
+
+
+def hash_key(key):
+    encryption_key = secret_key
+    f = Fernet(encryption_key)
+    encrypted_key = f.encrypt(key.encode())
+    return encrypted_key.decode()
+
+
+def generate_key():
+    characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    key = ''.join(secrets.choice(characters) for _ in range(8))
+    return key
+
+
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
@@ -30,9 +49,8 @@ def enter_code(request):
     if request.method == 'POST':
         form = SecretCodeForm(request.POST)
         if form.is_valid():
-            code = form.cleaned_data['code']
             try:
-                if request.user.usersecretcode.secret_code == code:
+                if request.user.usersecretcode.connect_2auf == 'false' or not request.user.usersecretcode.connect_2auf:
                     return redirect('profile')
             except UserSecretCode.DoesNotExist:
                 form.add_error(None, "No secret code found for this user.")
@@ -68,7 +86,6 @@ def login_view(request):
     else:
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
-
 
 
 def logout(request):

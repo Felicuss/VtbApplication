@@ -1,11 +1,17 @@
+from http.client import responses
+
+from django.template.context_processors import request
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from .models import Contact
 from .serializers import ContactSerializer
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+import json
 
 
-#Я попросил chatgpt описать этот класс
+# Я попросил chatgpt описать этот класс
 class ContactListCreate(generics.ListCreateAPIView):
     """
     Представление ContactListCreate предоставляет API для работы со списком контактов:
@@ -57,3 +63,15 @@ class ContactListCreate(generics.ListCreateAPIView):
 
         # Возвращает JSON-ответ с созданным объектом
         return Response(serializer.data)
+
+
+@api_view(('GET',))
+@renderer_classes((JSONRenderer))
+def yandex_handler(event):
+    response_data = {}
+    event = event.POST
+    text = "Привет, я навык с помощью, которого ты сможешь авторизоваться в тестовом приложении для ВТБ хаккатона от команды Misis Mojarung"
+    response_data['response']: {"text": text, "end_session": "false"}
+    return JsonResponse({
+        response_data
+    })
