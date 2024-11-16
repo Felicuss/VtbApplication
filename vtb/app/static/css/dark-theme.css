@@ -1,0 +1,23 @@
+
+@font-face {
+    font-family: 'NothingFont';
+    src: url('fonts/Ostrovsky-Bold.otf');
+    font-weight: normal;
+    font-style: normal;
+}
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'NothingFont', sans-serif;
+}
+
+.container {
+    padding: 20px;
+}
+
+nav a {
+    margin: 0 10px;
+    color: #ffffff;
+    text-decoration: none;
+}
+

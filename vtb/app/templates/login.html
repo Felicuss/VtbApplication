@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card bg-secondary text-light">
+            <div class="card-body">
+                <h4 class="card-title text-center mb-4">Вход</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Почта</label>
+                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Введите почту">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">Пароль</label>
+                        <input type="password" name="password" id="id_password" class="form-control" placeholder="Введите пароль">
+                    </div>
+                    <button type="submit" class="btn" style="background-color: #800000; color: white; width: 100%;">Вход</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
