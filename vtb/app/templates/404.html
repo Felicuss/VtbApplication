@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center" style="margin-top: 100px;">
+    <h1 class="display-1 text-danger"><i class="fas fa-exclamation-triangle"></i> 404</h1>
+    <h2 class="display-4">Страница не найдена</h2>
+    <p class="lead">Извините, но запрашиваемая страница не найдена.</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'home' %}">Вернуться на главную страницу</a>
+</div>
+{% endblock %}

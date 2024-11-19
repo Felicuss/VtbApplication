@@ -24,6 +24,7 @@ def decrypt_key(encrypted_key):
 @csrf_exempt
 def alice_handler(request):
     buttons = []
+    card = None  # To include an image card in the response
     if request.method == "POST":
         request_data = json.loads(request.body)
         try:
@@ -55,6 +56,29 @@ def alice_handler(request):
                         user_info.save()
 
                         response_text = "Ваш аккаунт успешно подключён!"
+                        buttons = [
+                            {
+                                "title": "Подтвердить вход",
+                                "payload": {},
+                                "hide": True
+                            },
+                            {
+                                "title": "Отвязать аккаунт",
+                                "payload": {},
+                                "hide": True
+                            }
+                        ]
+                        card = {
+                            "type": "BigImage",
+                            "image_id": "1027858/46r960da47f60207e924",
+                            "title": "Успех!",
+                            "description": "Ваш аккаунт подключён. Используйте кнопки для управления доступом.",
+                            "button": {
+                                "text": "Узнать больше",
+                                "url": "http://example.com/",
+                                "payload": {}
+                            }
+                        }
                         key_found = True
                         break
 
@@ -65,7 +89,6 @@ def alice_handler(request):
                 user_state.save()
                 response_text = "Пожалуйста, введите ваш секретный ключ."
         else:
-            # Проверка на подтверждение входа
             confirmation_phrases = ["подтвердить вход", "да", "вход подтверждаю", 'войти', 'вход', 'подтверждаю']
             unlink_phrases = ["отвязать аккаунт", "отменить связь", "разъединить", "отключить"]
 
@@ -77,6 +100,24 @@ def alice_handler(request):
                         user_info.made_2fa = True
                         user_info.save()
                         response_text = "Вход успешно подтверждён!"
+                        buttons = [
+                            {
+                                "title": "Отвязать аккаунт",
+                                "payload": {},
+                                "hide": True
+                            }
+                        ]
+                        card = {
+                            "type": "BigImage",
+                            "image_id": "1027858/46r960da47f60207e924",
+                            "title": "Вход подтверждён",
+                            "description": "Ваш вход успешно подтверждён. Если хотите отвязать аккаунт, используйте кнопку ниже.",
+                            "button": {
+                                "text": "Открыть профиль",
+                                "url": "http://example.com/",
+                                "payload": {}
+                            }
+                        }
                         break
                 else:
                     response_text = "Ошибка: не удалось подтвердить вход."
@@ -107,25 +148,21 @@ def alice_handler(request):
                     }
                 ]
 
+        response_data = {
+            "response": {
+                "text": response_text,
+                "end_session": False,
+            },
+            "session": session,
+            "version": version
+        }
+
         if buttons:
-            response_data = {
-                "response": {
-                    "text": response_text,
-                    "end_session": False,
-                    "buttons": buttons
-                },
-                "session": session,
-                "version": version
-            }
-        else:
-            response_data = {
-                "response": {
-                    "text": response_text,
-                    "end_session": False,
-                },
-                "session": session,
-                "version": version
-            }
+            response_data["response"]["buttons"] = buttons
+
+        if card:
+            response_data["response"]["card"] = card
+
         return JsonResponse(response_data)
     else:
         return JsonResponse({"error": "Недопустимый метод запроса"}, status=405)

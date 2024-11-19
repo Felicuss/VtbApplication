@@ -1,5 +1,5 @@
-from tkinter.font import names
-
+from django.conf.urls import handler404, handler500
+from .views import custom_404, custom_500
 from django.urls import path
 from .views import (
     register_view,
@@ -8,6 +8,7 @@ from .views import (
     logout_view,
     waiting_for_confirmation_view,
     check_made_2fa_view,
+    regenerate_key
 )
 
 urlpatterns = [
@@ -18,4 +19,7 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('waiting-for-confirmation/', waiting_for_confirmation_view, name='waiting_for_confirmation'),
     path('check-made-2fa/', check_made_2fa_view, name='check_made_2fa'),
+    path('regenerate-key/', regenerate_key, name='regenerate_key'),
 ]
+handler404 = custom_404
+handler500 = custom_500

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center" style="margin-top: 100px;">
+    <h1 class="display-1 text-danger"><i class="fas fa-server"></i> 500</h1>
+    <h2 class="display-4">Внутренняя ошибка сервера</h2>
+    <p class="lead">Извините, произошла ошибка на сервере. Пожалуйста, попробуйте позже.</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'home' %}">Вернуться на главную страницу</a>
+</div>
+{% endblock %}

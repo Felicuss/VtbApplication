@@ -3,6 +3,44 @@
 {% block title %}Вход{% endblock %}
 
 {% block content %}
+<style>
+    .card {
+        border: 2px solid #ffffff; /* Белая рамка вокруг карточки */
+        border-radius: 10px; /* Закругленные углы */
+        overflow: hidden; /* Скрыть переполнение */
+    }
+
+    .card-title {
+        font-size: 1.5rem; /* Размер шрифта заголовка */
+        font-weight: bold; /* Жирный шрифт */
+        color: #ffffff; /* Цвет текста заголовка */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Тень для текста */
+        margin-bottom: 20px; /* Отступ снизу */
+        animation: fadeIn 1s; /* Анимация появления заголовка */
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .btn {
+        transition: background-color 0.3s, transform 0.3s; /* Плавный переход для кнопок */
+    }
+
+    .btn:hover {
+        background-color: #ffffff; /* Цвет фона при наведении */
+        color: #800000; /* Цвет текста при наведении */
+        transform: scale(1.05); /* Увеличение кнопки при наведении */
+    }
+
+    /* Стили для плейсхолдеров */
+    ::placeholder {
+        color: white; /* Цвет текста плейсхолдера */
+        opacity: 1; /* Полная непрозрачность */
+    }
+</style>
+
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card bg-secondary text-light">
@@ -12,11 +50,11 @@
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="id_username" class="form-label">Почта</label>
-                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Введите почту">
+                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Введите почту" required>
                     </div>
                     <div class="mb-3">
                         <label for="id_password" class="form-label">Пароль</label>
-                        <input type="password" name="password" id="id_password" class="form-control" placeholder="Введите пароль">
+                        <input type="password" name="password" id="id_password" class="form-control" placeholder="Введите пароль" required>
                     </div>
                     <button type="submit" class="btn" style="background-color: #800000; color: white; width: 100%;">Вход</button>
                 </form>

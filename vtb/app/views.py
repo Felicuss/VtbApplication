@@ -4,6 +4,7 @@ from .forms import RegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .models import UserInfo
+from .utils import redirect_if_unauthenticated
 import secrets
 from cryptography.fernet import Fernet
 
@@ -83,6 +84,7 @@ def check_made_2fa_view(request):
     return JsonResponse({'redirect': False})
 
 
+@redirect_if_unauthenticated
 @login_required
 def profile_view(request):
     user_info = decrypt_key(UserInfo.objects.get(user=request.user).secret_key)
@@ -92,3 +94,37 @@ def profile_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+def custom_404(request, exception):
+    return render(request, 'astro_check/404.html', status=404)
+
+
+def custom_400(request, exception):
+    return render(request, 'astro_check/404.html', status=400)
+
+
+def custom_500(request):
+    return render(request, 'astro_check/error.html', status=500)
+
+
+def custom_504(request):
+    return render(request, 'astro_check/error.html', status=504)
+
+
+def generate_key():
+    characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    key = ''.join(secrets.choice(characters) for _ in range(8))
+    return key
+
+
+@login_required
+def regenerate_key(request):
+    if request.method == 'POST':
+        user = request.user
+        new_key = generate_key()
+        hashed_key = hash_key(new_key)
+        UserInfo.objects.update_or_create(user=user, defaults={'secret_key': hashed_key, 'has_yandex_2fa': False})
+
+        return JsonResponse({'new_secret_key': new_key})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
