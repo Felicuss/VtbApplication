@@ -44,6 +44,12 @@ def login_view(request):
             user = form.get_user()
             user_info = UserInfo.objects.get(user=user)
             if not user_info.has_yandex_2fa:
+                if user_info.telegram_username:
+                    send_telegram_message(
+                        username=user_info.telegram_username,
+                        message=f"Внимание, в ваш аккаунт только что совершили вход. "
+                                f"Если это были не вы срочно измените пароль."
+                    )
                 login(request, user)
                 return redirect('profile')
             else:
@@ -62,6 +68,7 @@ def waiting_for_confirmation_view(request):
 
 
 from django.contrib.auth.models import User
+from .tg.telegram_notifications import send_telegram_message
 
 
 def check_made_2fa_view(request):
@@ -74,6 +81,12 @@ def check_made_2fa_view(request):
                 del request.session['waiting_for_confirmation']
                 del request.session['user_id']
                 login(request, user)
+                if user_info.telegram_username:
+                    send_telegram_message(
+                        username=user_info.telegram_username,
+                        message=f"Внимание, в ваш аккаунт только что совершили вход. "
+                                f"Если это были не вы срочно измените пароль."
+                    )
                 user_info.made_2fa = False
                 user_info.save()
                 return JsonResponse({'redirect': True})
