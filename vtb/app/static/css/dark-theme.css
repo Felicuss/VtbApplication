@@ -31,3 +31,119 @@ nav a {
     background-color: #1a1a1a; /* Немного светлее */
 }
 
+.card {
+        border: 2px solid #ffffff; /* Белая рамка вокруг карточки */
+        border-radius: 10px; /* Закругленные углы */
+        overflow: hidden; /* Скрыть переполнение */
+    }
+
+    .card-title {
+        font-size: 1.5rem; /* Размер шрифта заголовка */
+        font-weight: bold; /* Жирный шрифт */
+        color: #ffffff; /* Цвет текста заголовка */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Тень для текста */
+        margin-bottom: 20px; /* Отступ снизу */
+        animation: fadeIn 1s; /* Анимация появления заголовка */
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .btn {
+        transition: background-color 0.3s, transform 0.3s; /* Плавный переход для кнопок */
+    }
+
+    .btn:hover {
+        background-color: #ffffff; /* Цвет фона при наведении */
+        color: red;
+        transform: scale(1.05); /* Увеличение кнопки при наведении */
+    }
+    .modal-open {
+        overflow: hidden;
+    }
+    .alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #757171;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 18px;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+        z-index: 1000;
+    }
+
+    .alert.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    /* Скрываем модальное окно по умолчанию */
+.modal {
+    display: none; /* Модал скрыт */
+    opacity: 0; /* Прозрачность 0 */
+    transition: opacity 0.3s ease; /* Плавный переход */
+}
+
+/* Показываем модальное окно */
+.modal.show {
+    display: block; /* Модал видим */
+    opacity: 1; /* Полная непрозрачность */
+}
+
+/* Затемнение фона */
+.modal-dialog {
+    transform: scale(0.9); /* Уменьшенная модал по умолчанию */
+    transition: transform 0.3s ease; /* Плавный зум */
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1); /* Нормальный размер при отображении */
+}
+.warning-alert {
+        width: 350px;
+        background-color: #ffc107 !important; /* Желтый фон */
+        color: black;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+    }
+
+    .loader-ring {
+        position: relative;
+        width: 50px;
+        height: 50px;
+    }
+
+    .loader-ring svg {
+        transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+        fill: none;
+        stroke: #00990055 !important;
+        stroke-width: 5;
+    }
+
+    .ring-fill {
+        fill: none;
+        stroke: white;
+        stroke-width: 5;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.3s;
+    }
+
+    .loader-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        font-weight: bold;
+        color: black;
+    }

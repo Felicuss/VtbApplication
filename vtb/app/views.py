@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, logout
 from .forms import RegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
@@ -7,6 +7,10 @@ from .models import UserInfo
 from .utils import redirect_if_unauthenticated
 import secrets
 from cryptography.fernet import Fernet
+from django.contrib.auth.models import User
+from .telegram_notifications import send_message_to_user
+
+from django.http import JsonResponse
 
 secret_key = b'gnehx6C8O2o2JquonBEzPVrDGfdnRns8K34zzkqiPi8='
 
@@ -34,9 +38,6 @@ def register_view(request):
     return render(request, 'register.html', {'form': form})
 
 
-from django.http import JsonResponse
-
-
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
@@ -44,13 +45,13 @@ def login_view(request):
             user = form.get_user()
             user_info = UserInfo.objects.get(user=user)
             if not user_info.has_yandex_2fa:
+                login(request, user)
                 if user_info.telegram_username:
-                    send_telegram_message(
+                    send_message_to_user(
                         username=user_info.telegram_username,
                         message=f"Внимание, в ваш аккаунт только что совершили вход. "
                                 f"Если это были не вы срочно измените пароль."
                     )
-                login(request, user)
                 return redirect('profile')
             else:
                 request.session['waiting_for_confirmation'] = True
@@ -67,10 +68,6 @@ def waiting_for_confirmation_view(request):
     return render(request, 'waiting_for_confirmation.html')
 
 
-from django.contrib.auth.models import User
-from .tg.telegram_notifications import send_telegram_message
-
-
 def check_made_2fa_view(request):
     user_id = request.session.get('user_id')
     if user_id is not None:
@@ -82,7 +79,7 @@ def check_made_2fa_view(request):
                 del request.session['user_id']
                 login(request, user)
                 if user_info.telegram_username:
-                    send_telegram_message(
+                    send_message_to_user(
                         username=user_info.telegram_username,
                         message=f"Внимание, в ваш аккаунт только что совершили вход. "
                                 f"Если это были не вы срочно измените пароль."
@@ -101,7 +98,38 @@ def check_made_2fa_view(request):
 @login_required
 def profile_view(request):
     user_info = decrypt_key(UserInfo.objects.get(user=request.user).secret_key)
-    return render(request, 'profile.html', {'user_info': user_info})
+    user = UserInfo.objects.get(user=request.user)
+    if user.has_yandex_2fa and user.telegram_username != '':
+        percent = 100
+        text = 'Ваш уровень защиты максимальный'
+        color_bg = 'green'
+        color_text = 'white'
+    elif not user.has_yandex_2fa and user.telegram_username != '':
+        percent = 38
+        text = 'Уровень защиты аккаунта низкий. Пожалуйста подключите 2FA через Яндекс Алису.'
+        color_bg = 'yellow'
+        color_text = 'black'
+    elif user.has_yandex_2fa and user.telegram_username == '':
+        percent = 80
+        text = ('Уровень защиты аккаунта высокий. '
+                'Подключите уведомления в телеграмме о входе в ваш аккаунт в настройках.')
+        color_bg = 'green'
+        color_text = 'white'
+    else:
+        percent = 18
+        text = ('Уровень защиты аккаунта минимальный. '
+                'Подключите 2FA через Яндекс Алису и уведомления в телеграмме о входе в ваш аккаунт в настройках')
+        color_bg = 'red'
+        color_text = 'white'
+    context = {
+        'percent' : percent,
+        'text': text,
+        'color_bg': color_bg,
+        'color_text': color_text,
+        'user_info': user_info,
+
+    }
+    return render(request, 'profile.html', context)
 
 
 def logout_view(request):
@@ -109,20 +137,20 @@ def logout_view(request):
     return redirect('login')
 
 
-def custom_404(request, exception):
-    return render(request, 'astro_check/404.html', status=404)
+from django.shortcuts import redirect
 
+def custom_404(request, exception):
+    return redirect('/register')
 
 def custom_400(request, exception):
-    return render(request, 'astro_check/404.html', status=400)
-
+    return redirect('/register')
 
 def custom_500(request):
-    return render(request, 'astro_check/error.html', status=500)
-
+    return redirect('/register')
 
 def custom_504(request):
-    return render(request, 'astro_check/error.html', status=504)
+    return redirect('/register')
+
 
 
 def generate_key():
@@ -141,3 +169,15 @@ def regenerate_key(request):
 
         return JsonResponse({'new_secret_key': new_key})
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@redirect_if_unauthenticated
+@login_required
+def settings_view(request):
+    user_info, created = UserInfo.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        tg_username = request.POST.get('tg_username', '').strip()
+        user_info.telegram_username = tg_username
+        user_info.save()
+    return render(request, 'settings.html', {'user_info': user_info})
+
+

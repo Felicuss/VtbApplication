@@ -8,3 +8,7 @@ urlpatterns = [
     path('', include('app.urls')),
     path('alicebot/', include('alicebot.urls')),
 ]
+
+handler404 = 'app.views.custom_404'
+handler400 = 'app.views.custom_400'
+handler500 = 'app.views.custom_500'

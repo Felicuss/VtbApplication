@@ -8,9 +8,9 @@ bot = telebot.TeleBot(TOKEN)
 def save_user_to_db(username, user_id):
     conn = sqlite3.connect('db.sqlite3')
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM telegram_users WHERE user_id = ?', (user_id,))
+    cursor.execute('SELECT * FROM app_telegram WHERE chat_id = ?', (user_id,))
     if not cursor.fetchone():
-        cursor.execute('INSERT INTO telegram_users (username, user_id) VALUES (?, ?)', (username, user_id))
+        cursor.execute('INSERT INTO app_telegram (username, chat_id) VALUES (?, ?)', (username, user_id))
         conn.commit()
 
     conn.close()

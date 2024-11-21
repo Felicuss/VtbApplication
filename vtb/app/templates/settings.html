@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Настройки{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card bg-secondary text-light">
+            <div class="card-body">
+                <h4 class="card-title text-center mb-4">Настройки</h4>
+                <div class="d-flex justify-content-center mb-4">
+    <a href="https://t.me/vtbapi_bot" target="_blank" class="btn btn-outline-light mx-1"
+       title="Telegram" style="width: 60px; height: 60px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;">
+        <img src="https://psv4.userapi.com/s/v1/d/pdsSa_ty7aUaIU_ZoUSQnC_mQUFy2ZiFu8wKHs5zbPJkYJp12gXaMj0ypt3JJhGd1dE2vFZc0I39Kxekm82WnfYXoybyqqe_0_P7isvC9-k00MbFiiF9yg/tg.png"
+             alt="Telegram" style="width: 40px; height: 40px;">
+    </a>
+    <a href="https://alice.ya.ru/s/f9e26c98-c148-4776-a2a2-e2faace32535" target="_blank"
+       class="btn btn-outline-light mx-2" title="Yandex"
+       style="width: 60px; height: 60px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;">
+        <img src="https://psv4.userapi.com/s/v1/d/UTN63SSegwGZz7Q88-xp36FdVJ4Hx3abbbDeeWVIDrPRPtDUHfqzvU8O3_MpRTz1c9cBplF56IiQTn7FrK7UdLxx5dhCoIIw8prlxx7wd-t31pAQr6_TuA/alice.png"
+             alt="Yandex" style="width: 40px; height: 40px;">
+    </a>
+</div>
+
+
+
+                <!-- Поле для ввода Telegram username -->
+                <form id="settingsForm" method="post">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <input type="text" id="tgUsername" name="tg_username" class="form-control"
+                               placeholder="Введите Telegram username"
+                               value="{{ user_info.telegram_username }}">
+                        <button class="btn btn-outline-light" type="submit">Сохранить</button>
+                    </div>
+                </form>
+
+                <!-- Кнопка "Назад" -->
+                <div class="text-center">
+                    <a href="/profile" class="btn btn-outline-light">Назад</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

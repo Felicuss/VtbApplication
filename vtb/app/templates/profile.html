@@ -3,90 +3,13 @@
 {% block title %}Профиль{% endblock %}
 
 {% block content %}
-<style>
-
-    .card {
-        border: 2px solid #ffffff; /* Белая рамка вокруг карточки */
-        border-radius: 10px; /* Закругленные углы */
-        overflow: hidden; /* Скрыть переполнение */
-    }
-
-    .card-title {
-        font-size: 1.5rem; /* Размер шрифта заголовка */
-        font-weight: bold; /* Жирный шрифт */
-        color: #ffffff; /* Цвет текста заголовка */
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Тень для текста */
-        margin-bottom: 20px; /* Отступ снизу */
-        animation: fadeIn 1s; /* Анимация появления заголовка */
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    .btn {
-        transition: background-color 0.3s, transform 0.3s; /* Плавный переход для кнопок */
-    }
-
-    .btn:hover {
-        background-color: #ffffff; /* Цвет фона при наведении */
-        color: red;
-        transform: scale(1.05); /* Увеличение кнопки при наведении */
-    }
-    .modal-open {
-        overflow: hidden;
-    }
-    .alert {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: #757171;
-        color: #fff;
-        padding: 10px 20px;
-        border-radius: 5px;
-        font-size: 18px;
-        opacity: 0;
-        transform: translateY(-20px);
-        transition: opacity 0.5s ease, transform 0.5s ease;
-        z-index: 1000;
-    }
-
-    .alert.show {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    /* Скрываем модальное окно по умолчанию */
-.modal {
-    display: none; /* Модал скрыт */
-    opacity: 0; /* Прозрачность 0 */
-    transition: opacity 0.3s ease; /* Плавный переход */
-}
-
-/* Показываем модальное окно */
-.modal.show {
-    display: block; /* Модал видим */
-    opacity: 1; /* Полная непрозрачность */
-}
-
-/* Затемнение фона */
-.modal-dialog {
-    transform: scale(0.9); /* Уменьшенная модал по умолчанию */
-    transition: transform 0.3s ease; /* Плавный зум */
-}
-
-.modal.show .modal-dialog {
-    transform: scale(1); /* Нормальный размер при отображении */
-}
-
-</style>
-
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card bg-secondary text-light">
             <div class="card-body">
                 <h4 class="card-title text-center mb-4">Профиль</h4>
                 <p><strong>Почта:</strong> {{ request.user.email }}</p>
+                <p>
                 <p>
                     <strong>Секретный ключ:</strong>
                     <span id="secretKey" class="text-monospace">●●●●●</span>
@@ -104,8 +27,12 @@
                             title="Изменить код">
                         <i class="bi bi-arrow-repeat"></i>
                     </button>
+                    <button id="settingsButton" class="btn btn-icon btn-sm btn-outline-light"
+                            style="margin-left: 10px;" data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Настройки" onclick="redirectToSettings()">
+                        <i class="bi bi-gear"></i>
+                    </button>
                 <div id="alertContainer"></div>
-                </p>
             </div>
         </div>
     </div>
@@ -139,6 +66,59 @@
     </div>
 </div>
 
+<div id="warningAlertContainer" class="warning-alert position-fixed"
+     style="bottom: 20px; right: 20px; display: none; opacity: 0; transform: translateY(20px); transition: opacity 0.5s, transform 0.5s; background-color: {{color_bg}} !important;">
+    <div class="d-flex align-items-center">
+        <div class="loader-ring me-3">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+                <circle class="ring-bg" cx="25" cy="25" r="20"></circle>
+                <circle class="ring-fill" cx="25" cy="25" r="20" stroke-dasharray="125.6"
+                        stroke-dashoffset="125.6"></circle>
+            </svg>
+            <span id="loaderPercentage" style="color: {{color_text}} !important;" class="loader-text">0%</span>
+        </div>
+        <div class="text-light" style="color: {{color_text}} !important;">
+            <strong>{{text}}</strong>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+            showWarningAlert({{percent}}); // Уровень защиты (в процентах)
+        }, 2000);
+    });
+
+    const showWarningAlert = (securityLevel) => {
+        const warningAlert = document.getElementById("warningAlertContainer");
+        const loaderRing = document.querySelector(".ring-fill");
+        const loaderPercentage = document.getElementById("loaderPercentage");
+
+        // Показываем алерт
+        warningAlert.style.display = "block";
+        setTimeout(() => {
+            warningAlert.style.opacity = "1";
+            warningAlert.style.transform = "translateY(0)";
+        }, 100);
+
+        // Анимация заполнения кольца
+        let currentLevel = 0;
+        const interval = setInterval(() => {
+            if (currentLevel >= securityLevel) {
+                clearInterval(interval);
+            } else {
+                currentLevel++;
+                const dashOffset = 125.6 - (125.6 * currentLevel) / 100; // 125.6 - длина окружности
+                loaderRing.style.strokeDashoffset = dashOffset;
+                loaderPercentage.textContent = `${currentLevel}%`;
+            }
+        }, 20); // Скорость анимации
+    };
+</script>
+
+
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const modal = document.getElementById('customModal');
@@ -167,31 +147,38 @@
     });
 
     const regenerateKey = () => {
-        fetch('/regenerate-key/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                user_id: '{{ request.user.id }}'
-            })
+    fetch('/regenerate-key/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            user_id: '{{ request.user.id }}'
         })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Ошибка при генерации ключа');
-        })
-        .then(data => {
-            document.getElementById('secretKey').textContent = data.new_secret_key;
-            showAlert('Секретный ключ успешно обновлён!');
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            showAlert('Не удалось обновить секретный ключ.');
-        });
-    };
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Ошибка при генерации ключа');
+    })
+    .then(data => {
+        // Обновляем текст секретного ключа
+        const secretKeyElement = document.getElementById('secretKey');
+        secretKeyElement.textContent = "●●●●●"; // Скрываем ключ после обновления
+
+        // Обновляем переменную user_info новым ключом
+        user_info = data.new_secret_key;
+
+        showAlert('Секретный ключ успешно обновлён!');
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showAlert('Не удалось обновить секретный ключ.');
+    });
+};
+
 
     const showAlert = (message) => {
         const alertBox = document.getElementById('alert');
@@ -209,7 +196,7 @@
             }, 700);
         }, 3000);
     };
-    const user_info = "{{user_info}}"; // Здесь замените значение на нужный ключ
+    let user_info = "{{user_info}}"; // Здесь замените значение на нужный ключ
 
     // Функция для показа/скрытия ключа
     function toggleVisibility() {
@@ -230,17 +217,25 @@
     }
 
     // Функция для копирования ключа в буфер обмена
-    function copyToClipboard() {
-        const temporaryInput = document.createElement("input");
-        temporaryInput.value = user_info;
-        document.body.appendChild(temporaryInput);
-        temporaryInput.select();
-        temporaryInput.setSelectionRange(0, 99999); // Для мобильных устройств
-        document.execCommand("copy");
-        document.body.removeChild(temporaryInput);
+function copyToClipboard() {
+    const secretKeyElement = document.getElementById("secretKey");
+    let keyToCopy;
 
-        showCustomAlert("Ключ скопирован в буфер обмена!");
+    // Проверяем, скрыт ли ключ
+    if (secretKeyElement.textContent === "●●●●●") {
+        keyToCopy = user_info; // Используем оригинальный ключ из переменной
+    } else {
+        keyToCopy = secretKeyElement.textContent; // Если не скрыт, берем текст из элемента
     }
+    const temporaryInput = document.createElement("input");
+    temporaryInput.value = keyToCopy;
+    document.body.appendChild(temporaryInput);
+    temporaryInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(temporaryInput);
+    showCustomAlert("Ключ скопирован в буфер обмена!");
+}
+
 
     // Функция для показа уведомления
     function showCustomAlert(message) {
@@ -265,6 +260,11 @@
             setTimeout(() => alert.remove(), 500); // Удаляем из DOM
         }, 3000);
     }
+
+    function redirectToSettings() {
+    window.location.href = '/settings'; // Перенаправление на страницу настроек
+}
+
 </script>
 
 {% endblock %}
