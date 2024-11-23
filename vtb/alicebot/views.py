@@ -27,10 +27,13 @@ def alice_handler(request):
     card = None  # To include an image card in the response
     if request.method == "POST":
         request_data = json.loads(request.body)
+        print(request_data)
         try:
             user_message = request_data['request']['original_utterance']
         except:
             user_message = " ".join(request_data['request']['nlu']['tokens'])
+            if user_message == '' or user_message == ' ' or user_message == '  ':
+                user_message = ("".join(request_data['request']['payload']['text'])).strip()
         session = request_data['session']
         version = request_data['version']
         yandex_id = session['user_id']
@@ -40,15 +43,14 @@ def alice_handler(request):
         if not user_message:
             response_text = (
                 "Привет! 👋 Я помогу вам управлять двухфакторной аутентификацией. "
-                "Для начала введите команду, например: 'Подключить аккаунт' или 'Помощь', чтобы узнать, что я умею. 😊"
+                "Для начала введите ваш ключ с нашего сайта или 'Помощь', чтобы узнать, что я умею. 😊"
             )
             buttons = [
-                {"title": "Помощь 😊", "payload": {}, "hide": True},
-                {"title": "Подключить аккаунт 🔑", "payload": {}, "hide": True}
+                {"title": "Помощь", "payload": {'text': 'помощь'}, "hide": True},
             ]
             card = {
                 "type": "BigImage",
-                "image_id": "965417/55b4c33d215570b38ef9",
+                "image_id": "1652229/aef5555b595870d5408d",
                 "title": "Привет! 👋",
                 "description": response_text,
             }
@@ -78,10 +80,6 @@ def alice_handler(request):
                 "❌ *Отключение аккаунта* — Если нужно, легко отвяжу твой аккаунт.\n\n"
                 "Для работы просто пиши команды, а я все сделаю! 🚀\n"
             )
-            buttons = [
-                {"title": "Подтвердить вход ✅", "payload": {}, "hide": True},
-                {"title": "Отвязать аккаунт ❌", "payload": {}, "hide": True}
-            ]
             card = {
                 "type": "BigImage",
                 "image_id": "1540737/d1fc457bf0a80bb85d37",
@@ -99,6 +97,7 @@ def alice_handler(request):
                 "version": version
             }
             return JsonResponse(response_data)
+
 
         if not user.secret_key:
             if user_state.state == "WAITING_FOR_KEY":
@@ -121,12 +120,12 @@ def alice_handler(request):
                         buttons = [
                             {
                                 "title": "Подтвердить вход ✅",
-                                "payload": {},
+                                "payload": {'text': 'подтвердить'},
                                 "hide": True
                             },
                             {
                                 "title": "Отвязать аккаунт ❌",
-                                "payload": {},
+                                "payload": {'text': 'отвязать'},
                                 "hide": True
                             }
                         ]
@@ -158,13 +157,12 @@ def alice_handler(request):
                     "description": response_text,
                 }
                 buttons = [
-                    {"title": "Помощь😊", "payload": {}, "hide": True}
+                    {"title": "Помощь", "payload": {'text': 'помощь'}, "hide": True}
                 ]
 
         else:
-            confirmation_phrases = ["подтвердить вход", "да", "вход подтверждаю", 'войти', 'вход', 'подтверждаю']
-            unlink_phrases = ["отвязать аккаунт", "отменить связь", "разъединить", "отключить"]
-
+            confirmation_phrases = ["подтвердить вход", "да", "вход подтверждаю", 'войти', 'вход', 'подтверждаю', 'подтвердить']
+            unlink_phrases = ["отвязать аккаунт", "отменить связь", "разъединить", "отключить", 'отвязать']
             if any(phrase in user_message.lower() for phrase in confirmation_phrases):
                 user_info_list = UserInfo.objects.all()
                 for user_info in user_info_list:
@@ -176,7 +174,7 @@ def alice_handler(request):
                         buttons = [
                             {
                                 "title": "Отвязать аккаунт ❌",
-                                "payload": {},
+                                "payload": {'text': 'отвязать'},
                                 "hide": True
                             }
                         ]
@@ -195,9 +193,6 @@ def alice_handler(request):
                         "title": "Ошибка ❌",
                         "description": response_text,
                     }
-                    buttons = [
-                        {"title": "Попробовать снова 🔄", "payload": {}, "hide": True}
-                    ]
             elif any(phrase in user_message.lower() for phrase in unlink_phrases):
                 for user_info in UserInfo.objects.all():
                     decrypted_key = decrypt_key(user_info.secret_key)
@@ -221,12 +216,12 @@ def alice_handler(request):
                 buttons = [
                     {
                         "title": "Подтвердить вход ✅",
-                        "payload": {},
+                        "payload": {'text': 'подтвердить'},
                         "hide": True
                     },
                     {
                         "title": "Отвязать аккаунт ❌",
-                        "payload": {},
+                        "payload": {'text': 'отвязать'},
                         "hide": True
                     }
                 ]
