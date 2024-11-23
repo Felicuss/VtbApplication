@@ -12,3 +12,4 @@
 - JSON: Формат обмена данными между клиентом и сервером.
 
 ![mojarung12345](https://github.com/user-attachments/assets/c32f515d-2242-4d4f-b35d-afc05ddf42d4)
+![image](https://github.com/user-attachments/assets/74b6709d-b738-4998-a483-9a0e7e016bf1)
