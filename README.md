@@ -12,5 +12,8 @@
 - Cryptography: Библиотека для шифрования и дешифрования секретных ключей.
 - JSON: Формат обмена данными между клиентом и сервером.
 
-![mojarung12345](https://github.com/user-attachments/assets/c32f515d-2242-4d4f-b35d-afc05ddf42d4)
 
+
+![screen1](https://github.com/user-attachments/assets/2a243b5a-18cd-4648-b5bf-412525c595a1)
+![screen_tg](https://github.com/user-attachments/assets/cc7edcaf-ed6e-44ed-abbd-f35945fb277b)
+![screen_alice](https://github.com/user-attachments/assets/cf7ec3e8-1926-43f1-86a9-6bd26e20ee82)
