@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card bg-secondary text-light">
+            <div class="card-body">
+                <h4 class="card-title text-center mb-4">Профиль</h4>
+                <p><strong>Почта:</strong> {{ request.user.email }}</p>
+                <p>
+                <p>
+                    <strong>Секретный ключ:</strong>
+                    <span id="secretKey" class="text-monospace">●●●●●</span>
+                <p>
+                    <button id="toggleButton" class="btn btn-sm btn-outline-light" onclick="toggleVisibility()"
+                            style="margin-left: 10px;" data-bs-placement="top" title="Показать/скрыть код">
+                        <i id="toggleIcon" class="bi bi-eye"></i>
+                    </button>
+                    <button id="copyButton" class="btn btn-sm btn-outline-light" onclick="copyToClipboard()"
+                            style="margin-left: 10px;" data-bs-placement="top" title="Скопировать в буфер обмена">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                    <button id="regenerateButton" class="btn btn-icon btn-sm btn-outline-light"
+                            style="margin-left: 10px;" data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Изменить код">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                    <button id="settingsButton" class="btn btn-icon btn-sm btn-outline-light"
+                            style="margin-left: 10px;" data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Настройки" onclick="redirectToSettings()">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                <div id="alertContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="alert" class="alert alert-success position-fixed"
+     style="top: 20px; right: 20px; display: none; opacity: 0; transform: translateY(-20px); transition: opacity 0.5s, transform 0.5s;"
+     role="alert">
+    Секретный ключ скопирован в буфер обмена!
+</div>
+
+<!-- Модальное окно -->
+<div class="modal" id="customModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="color: black;">Подтверждение</h5>
+                <button type="button" class="close" id="customCloseButton">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color: black;">Вы уверены, что хотите изменить секретный ключ? <br> Данное действие отвяжет
+                    все текущие способы 2FA.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeModal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmRegenerate">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="warningAlertContainer" class="warning-alert position-fixed"
+     style="bottom: 20px; right: 20px; display: none; opacity: 0; transform: translateY(20px); transition: opacity 0.5s, transform 0.5s; background-color: {{color_bg}} !important;">
+    <div class="d-flex align-items-center">
+        <div class="loader-ring me-3">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+                <circle class="ring-bg" cx="25" cy="25" r="20"></circle>
+                <circle class="ring-fill" cx="25" cy="25" r="20" stroke-dasharray="125.6"
+                        stroke-dashoffset="125.6"></circle>
+            </svg>
+            <span id="loaderPercentage" style="color: {{color_text}} !important;" class="loader-text">0%</span>
+        </div>
+        <div class="text-light" style="color: {{color_text}} !important;">
+            <strong>{{text}}</strong>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+            showWarningAlert({{percent}}); // Уровень защиты (в процентах)
+        }, 2000);
+    });
+
+    const showWarningAlert = (securityLevel) => {
+        const warningAlert = document.getElementById("warningAlertContainer");
+        const loaderRing = document.querySelector(".ring-fill");
+        const loaderPercentage = document.getElementById("loaderPercentage");
+
+        // Показываем алерт
+        warningAlert.style.display = "block";
+        setTimeout(() => {
+            warningAlert.style.opacity = "1";
+            warningAlert.style.transform = "translateY(0)";
+        }, 100);
+
+        // Анимация заполнения кольца
+        let currentLevel = 0;
+        const interval = setInterval(() => {
+            if (currentLevel >= securityLevel) {
+                clearInterval(interval);
+            } else {
+                currentLevel++;
+                const dashOffset = 125.6 - (125.6 * currentLevel) / 100; // 125.6 - длина окружности
+                loaderRing.style.strokeDashoffset = dashOffset;
+                loaderPercentage.textContent = `${currentLevel}%`;
+            }
+        }, 20); // Скорость анимации
+    };
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById('customModal');
+        const closeModalButtons = [
+            document.getElementById('closeModal'),
+            document.getElementById('customCloseButton')
+        ];
+        const regenerateButton = document.getElementById('regenerateButton');
+        const confirmButton = document.getElementById('confirmRegenerate');
+        const openModal = () => {
+            modal.style.display = 'block';
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+        };
+        const closeModal = () => {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+        };
+        regenerateButton.addEventListener('click', openModal);
+        closeModalButtons.forEach(button => button.addEventListener('click', closeModal));
+        confirmButton.addEventListener('click', () => {
+            regenerateKey();
+            closeModal();
+        });
+    });
+
+    const regenerateKey = () => {
+    fetch('/regenerate-key/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            user_id: '{{ request.user.id }}'
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Ошибка при генерации ключа');
+    })
+    .then(data => {
+        // Обновляем текст секретного ключа
+        const secretKeyElement = document.getElementById('secretKey');
+        secretKeyElement.textContent = "●●●●●"; // Скрываем ключ после обновления
+
+        // Обновляем переменную user_info новым ключом
+        user_info = data.new_secret_key;
+
+        showAlert('Секретный ключ успешно обновлён!');
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showAlert('Не удалось обновить секретный ключ.');
+    });
+};
+
+
+    const showAlert = (message) => {
+        const alertBox = document.getElementById('alert');
+        alertBox.textContent = message;
+
+        alertBox.style.display = 'block';
+        alertBox.style.opacity = '1';
+        alertBox.style.transform = 'translateY(0)';
+
+        setTimeout(() => {
+            alertBox.style.opacity = '0';
+            alertBox.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 700);
+        }, 3000);
+    };
+    let user_info = "{{user_info}}"; // Здесь замените значение на нужный ключ
+
+    // Функция для показа/скрытия ключа
+    function toggleVisibility() {
+        const secretKeyElement = document.getElementById("secretKey");
+        const toggleIcon = document.getElementById("toggleIcon");
+
+        if (secretKeyElement.textContent === "●●●●●") {
+            secretKeyElement.textContent = user_info;
+            toggleIcon.classList.remove("bi-eye");
+            toggleIcon.classList.add("bi-eye-slash");
+            showCustomAlert("Ключ показан");
+        } else {
+            secretKeyElement.textContent = "●●●●●";
+            toggleIcon.classList.remove("bi-eye-slash");
+            toggleIcon.classList.add("bi-eye");
+            showCustomAlert("Ключ скрыт");
+        }
+    }
+
+    // Функция для копирования ключа в буфер обмена
+function copyToClipboard() {
+    const secretKeyElement = document.getElementById("secretKey");
+    let keyToCopy;
+
+    // Проверяем, скрыт ли ключ
+    if (secretKeyElement.textContent === "●●●●●") {
+        keyToCopy = user_info; // Используем оригинальный ключ из переменной
+    } else {
+        keyToCopy = secretKeyElement.textContent; // Если не скрыт, берем текст из элемента
+    }
+    const temporaryInput = document.createElement("input");
+    temporaryInput.value = keyToCopy;
+    document.body.appendChild(temporaryInput);
+    temporaryInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(temporaryInput);
+    showCustomAlert("Ключ скопирован в буфер обмена!");
+}
+
+
+    // Функция для показа уведомления
+    function showCustomAlert(message) {
+        const alertContainer = document.getElementById("alertContainer");
+
+        // Создаем элемент уведомления
+        const alert = document.createElement("div");
+        alert.className = "alert";
+        alert.textContent = message;
+
+        // Добавляем уведомление в контейнер
+        alertContainer.appendChild(alert);
+
+        // Плавно показываем уведомление
+        setTimeout(() => {
+            alert.classList.add("show");
+        }, 100);
+
+        // Убираем уведомление через 3 секунды
+        setTimeout(() => {
+            alert.classList.remove("show");
+            setTimeout(() => alert.remove(), 500); // Удаляем из DOM
+        }, 3000);
+    }
+
+    function redirectToSettings() {
+    window.location.href = '/settings'; // Перенаправление на страницу настроек
+}
+
+</script>
+
+{% endblock %}
